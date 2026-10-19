@@ -8,6 +8,7 @@ import org.lwjgl.opengl.GL; // Carga las funciones OpenGL disponibles en el equi
 import static org.lwjgl.glfw.GLFW.*; // Importa las funciones y constantes de ventanas y teclado.
 import static org.lwjgl.opengl.GL33.*; // Importa las funciones OpenGL hasta la versión 3.3.
 
+
 /**
  * CLASE 1: CREAR LA CIUDAD.
  * Sigue el flujo de los ejemplos: iniciar, loop, dibujar y limpiar.
@@ -17,7 +18,6 @@ import static org.lwjgl.opengl.GL33.*; // Importa las funciones OpenGL hasta la 
  */
 public class clase1 {
 
-    // ==================== 1. VARIABLES DE LA APLICACIÓN ====================
     protected long ventana; // Identificador que GLFW asigna a la ventana.
     protected int programa; // Identificador del programa que une ambos shaders.
     protected int vao; // Identificador del VAO: describe cómo leer los vértices.
@@ -28,18 +28,18 @@ public class clase1 {
     protected boolean vistaMapa = false; // Clase4 lo activa cuando dibuja la vista superior.
     private final Map<String, Integer> uniforms = new HashMap<>(); // Evita buscar repetidamente el mismo uniform.
 
-    protected static final int[][] MAPA = { // Matriz 11 x 11: 0 = calle, 1 = edificio, 2 = parque.
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // Fila norte: calle continua del borde.
-        {0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0}, // Sector norte nuevo: cuatro edificios y un parque.
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // Avenida horizontal.
-        {0, 2, 0, 1, 0, 1, 0, 1, 0, 2, 0}, // Parques en los sectores oeste y este; centro con edificios.
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // Avenida horizontal.
-        {0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0}, // Fila central: torres y dos parques.
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // Avenida horizontal.
-        {0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0}, // Fila de edificios del sur del centro.
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, // Avenida horizontal.
-        {0, 1, 0, 2, 0, 1, 0, 1, 0, 1, 0}, // Sector sur nuevo: cuatro edificios y un parque.
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} // Calle del borde sur.
+    protected static final int[][] MAPA = {
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 2, 0, 1, 0, 1, 0, 1, 0, 2, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 1, 0, 2, 0, 1, 0, 2, 0, 1, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+        {0, 1, 0, 2, 0, 1, 0, 1, 0, 1, 0},
+        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
     };
     protected static final float CELDA = 10; // Ancho y profundidad de cada celda del mapa (igual que en 7 x 7).
     protected static final float LIMITE = MAPA.length * CELDA / 2; // Distancia del origen a cada borde: 55 en un mapa de 110.
@@ -60,7 +60,6 @@ public class clase1 {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} // Calle.
     };
 
-    // ==================== 2. INICIO, CICLO Y LIMPIEZA ====================
 
     /** Organiza las tres fases de la aplicación y garantiza la limpieza si ocurre un error. */
     public void run() {
@@ -149,7 +148,6 @@ public class clase1 {
         glfwTerminate(); // Finaliza GLFW y sus recursos globales.
     }
 
-    // ==================== 3. TECLADO Y CÁMARA ====================
 
     /** Atiende las acciones de una sola pulsación. */
     protected void tecla(int key) {
@@ -165,11 +163,11 @@ public class clase1 {
 
     /** Mueve la cámara alrededor de la ciudad con las flechas horizontales. */
     protected void actualizar(float deltaTime) {
-        if (pulsada(GLFW_KEY_LEFT)) { // Comprueba la flecha izquierda.
-            orbita -= deltaTime; // Reduce el ángulo a razón de un radián por segundo.
+        if (pulsada(GLFW_KEY_LEFT)) {
+            orbita -= deltaTime;
         }
-        if (pulsada(GLFW_KEY_RIGHT)) { // Comprueba la flecha derecha.
-            orbita += deltaTime; // Aumenta el ángulo a la misma velocidad.
+        if (pulsada(GLFW_KEY_RIGHT)) {
+            orbita += deltaTime;
         }
     }
 
@@ -188,7 +186,6 @@ public class clase1 {
         // No necesita instrucciones en clase1: el shader inicial utiliza colores planos.
     }
 
-    // ==================== 4. CIUDAD A PARTIR DE UNA MATRIZ ====================
 
     /** Convierte el índice de una fila o columna al centro de su celda. */
     protected static float centro(int indice) {
@@ -227,6 +224,7 @@ public class clase1 {
     /** Recorre el mapa y transforma cada celda en geometría. */
     protected void escena() {
         caja(0, -0.25f, 0, 2 * LIMITE, 0.5f, 2 * LIMITE, 0.16f, 0.19f, 0.23f); // Dibuja la base de asfalto del tamaño de todo el mapa.
+
         for (int fila = 0; fila < MAPA.length; fila++) { // Recorre el mapa de norte a sur.
             for (int columna = 0; columna < MAPA[fila].length; columna++) { // Recorre cada fila de izquierda a derecha.
                 float x = centro(columna); // Convierte la columna a posición X.
@@ -235,16 +233,17 @@ public class clase1 {
                 if (tipo == 0) { // Selecciona las celdas transitables.
                     dibujarMarcasCalle(fila, columna, x, z); // Añade líneas amarillas entre intersecciones.
                 } else { // Las demás celdas representan manzanas completas.
-                    losaOchavada(x, 0.15f, z, CELDA, 0.3f, DIAGONAL_ACERA, 0.60f, 0.64f, 0.66f); // Dibuja la acera elevada con esquinas recortadas.
-                    if (tipo == 1) { // Selecciona una manzana ocupada por un edificio.
-                        float altura = alturaEdificio(fila, columna); // Obtiene una altura reproducible para esta manzana.
-                        float rojo = 0.28f + columna * 0.03f; // Varía el tono rojo según la columna.
-                        float verde = 0.34f + ((fila + columna) / 2 % 3) * 0.07f; // Alterna tres tonos de verde entre vecinos.
-                        float azul = 0.48f + fila * 0.02f; // Varía el tono azul según la fila.
-                        caja(x, altura / 2 + 0.3f, z, 7, altura, 7, rojo, verde, azul); // Coloca la base del edificio sobre la acera.
-                        caja(x, altura + 0.45f, z, 7.3f, 0.3f, 7.3f, 0.20f, 0.26f, 0.32f); // Añade una cubierta más ancha y oscura.
-                    } else { // El tipo 2 representa un parque.
-                        losaOchavada(x, 0.32f, z, 9, 0.1f, DIAGONAL_ACERA, 0.20f, 0.45f, 0.28f); // Cubre la parcela con césped verde.
+                    losaOchavada(x, 0.15f, z, CELDA, 0.3f, DIAGONAL_ACERA, 0.60f, 0.64f, 0.66f);
+
+                    if (tipo == 1) {
+                        float altura = alturaEdificio(fila, columna);
+                        float rojo = 0.28f + columna * 0.03f;
+                        float verde = 0.34f + ((fila + columna) / 2 % 3) * 0.07f;
+                        float azul = 0.48f + fila * 0.02f;
+                        caja(x, altura / 2 + 0.3f, z, 7, altura, 7, rojo, verde, azul);
+                        caja(x, altura + 0.45f, z, 7.3f, 0.3f, 7.3f, 0.20f, 0.26f, 0.32f);
+                    } else {
+                        losaOchavada(x, 0.32f, z, 9, 0.1f, DIAGONAL_ACERA, 0.20f, 0.45f, 0.28f);
                     }
                 }
             }
@@ -278,7 +277,6 @@ public class clase1 {
         }
     }
 
-    // ==================== 5. DIBUJAR CAJAS Y ENVIAR UNIFORMS ====================
 
     /** Dibuja una caja sin giro: posición XYZ, tamaño XYZ y color RGB entre 0 y 1. */
     protected void caja(float x, float y, float z, float sx, float sy, float sz, float r, float g, float b) {
@@ -318,7 +316,6 @@ public class clase1 {
         glUniform1i(uniform(nombre), valor); // Actualiza un entero, usado también para interruptores 0/1.
     }
 
-    // ==================== 6. SHADERS: CÓDIGO QUE EJECUTA LA GPU ====================
 
     /** Transforma vértices del cubo al mundo y después a la pantalla. */
     private String vertexShader() {
@@ -426,7 +423,6 @@ public class clase1 {
         }
     }
 
-    // ==================== 7. GEOMETRÍA DEL CUBO: VAO Y VBO ====================
 
     /** Crea un cubo explícito, con posición XYZ y normal XYZ por vértice, como en los ejemplos. */
     private void crearCubo() {

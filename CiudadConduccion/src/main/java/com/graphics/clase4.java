@@ -3,6 +3,18 @@ package com.graphics; // Reúne la versión final con las otras tres lecciones.
 import static org.lwjgl.glfw.GLFW.*; // Permite consultar la tecla que controla el minimapa.
 import static org.lwjgl.opengl.GL33.*; // Permite cambiar viewport, recorte y buffers de dibujo.
 
+// =========================================================================================
+// CLASE 4 JAVA :: AQUI SE CREA:
+// - SISTEMA DE ENTREGAS Y DESTINOS (BALIZA Y PLATAFORMA DORADA GIRATORIA)
+// - CICLO Y FASES DE LOS SEMAFOROS (ROJO, AMARILLO, VERDE)
+// - DIBUJO 3D DE SEMAFOROS (POSTES Y LENTES ILUMINADOS)
+// - ARBOLES DEL PARQUE (TRONCO MARRON Y COPA VERDE)
+// - BANCO DE MADERA DEL PARQUE (ASIENTO, SOPORTE Y RESPALDO)
+// - VENTANAS ILUMINADAS DE LOS EDIFICIOS
+// - PASOS PEATONALES Y RAYAS CEBRA EN LOS CRUCES
+// - MINIMAPA EN SEGUNDO PASE DE DIBUJO CON TIJERAS GL_SCISSOR (TECLA M)
+// =========================================================================================
+
 /**
  * CLASE 4: CIUDAD TERMINADA, ENTREGAS Y MINIMAPA.
  * Orden de lectura: estado, controles, entregas, decoración y segundo pase de dibujo.
@@ -32,20 +44,20 @@ public class clase4 extends clase3 {
     // ==================== 2. CONTROLES Y REINICIO ====================
 
     /** Añade el interruptor del minimapa a los controles anteriores. */
-    @Override // Amplía las teclas definidas por clase3.
+    @Override
     protected void tecla(int key) {
-        super.tecla(key); // Conserva salida, cámara, reinicio y luces.
-        if (key == GLFW_KEY_M) { // Comprueba si se pulsó la tecla del mapa.
-            mostrarMapa = !mostrarMapa; // Alterna entre mostrar y ocultar la vista superior.
+        super.tecla(key);
+        if (key == GLFW_KEY_M) {
+            mostrarMapa = !mostrarMapa;
         }
     }
 
     /** Reinicia el vehículo y el progreso de las entregas. */
-    @Override // Amplía el reinicio definido en clase2.
+    @Override
     protected void reiniciar() {
-        super.reiniciar(); // Restaura posición, velocidad y orientación del vehículo.
-        entregas = 0; // Vuelve a seleccionar la primera parada.
-        tiempo = 0; // Reinicia el cronómetro de la partida.
+        super.reiniciar();
+        entregas = 0;
+        tiempo = 0;
     }
 
     // ==================== 3. REGLAS DE LAS ENTREGAS ====================
@@ -86,19 +98,20 @@ public class clase4 extends clase3 {
     // ==================== 4. ESCENA FINAL Y DESTINO ====================
 
     /** Añade decoración y señal del destino a la escena iluminada. */
-    @Override // Amplía el dibujo acumulado de las tres etapas anteriores.
+    @Override
     protected void escena() {
-        super.escena(); // Dibuja la ciudad, el auto y las farolas.
-        if (!vistaMapa) { // Los detalles pequeños solo son necesarios en la vista principal.
-            decorarCiudad(); // Añade árboles, bancos, ventanas y señalización urbana.
+        super.escena();
+        if (!vistaMapa) {
+            decorarCiudad();
         }
-        if (entregas < DESTINOS.length) { // Dibuja un objetivo únicamente mientras queden entregas.
-            dibujarDestino(); // Coloca la marca dorada en la parada activa.
+        if (entregas < DESTINOS.length) {
+            dibujarDestino();
         }
     }
 
     /** Marca la próxima parada con una plataforma y una baliza flotante. */
     private void dibujarDestino() {
+        // ==================== AQUI SE CREA DESTINO Y BALIZA GIRATORIA DE ENTREGA ====================
         float x = DESTINOS[entregas][0]; // Lee el X de la próxima entrega.
         float z = DESTINOS[entregas][1]; // Lee el Z de la próxima entrega.
         entero("uEmision", 1); // Hace que el objetivo sea visible incluso de noche.
@@ -144,6 +157,7 @@ public class clase4 extends clase3 {
 
     /** Construye cuatro árboles y un banco utilizando cajas. */
     private void dibujarParque(float x, float z) {
+        // ==================== AQUI SE CREA ARBOL DEL PARQUE (TRONCO Y COPA) ====================
         float[] posiciones = {-2.5f, 2.5f}; // Define desplazamientos respecto al centro de la parcela.
         for (float desplazamientoX : posiciones) { // Selecciona el lado izquierdo o derecho del parque.
             for (float desplazamientoZ : posiciones) { // Selecciona el lado delantero o trasero.
@@ -153,16 +167,17 @@ public class clase4 extends clase3 {
                 caja(arbolX, 2.7f, arbolZ, 2, 2.3f, 2, 0.12f, 0.42f, 0.23f); // Dibuja la copa verde del árbol.
             }
         }
-        //asiento
+        // ==================== AQUI SE CREA BANCO DEL PARQUE (ASIENTO Y RESPALDO) ====================
         caja(x, 0.65f, z, 3, 0.25f, 0.8f, 0.55f, 0.30f, 0.13f); // Dibuja el asiento de madera del banco.
         caja(x, 0.4f, z, 2, 0.6f, 0.35f, 0.22f, 0.24f, 0.24f); // Dibuja el soporte oscuro del banco.
         caja(x, 1, z + 0.35f, 3, 0.7f, 0.15f, 0.55f, 0.30f, 0.13f); // Dibuja el respaldo detrás del asiento.
     }
 
+    // ==================== AQUI SE CREAN VENTANAS ILUMINADAS DE LOS EDIFICIOS ====================
     /** Distribuye ventanas por pisos en las cuatro paredes del edificio. */
     private void dibujarVentanas(float x, float z, float altura) {
         float rojo = 0.55f, verde = 0.72f, azul = 0.88f; // De día los vidrios reflejan el cielo celeste.
-        if (noche) { // Las ventanas simulan habitaciones encendidas en el ambiente nocturno.
+        if (noche) {
             entero("uEmision", 1); // Permite ver el color de las ventanas sin depender de farolas.
             rojo = 0.95f; // Luz cálida de las habitaciones.
             verde = 0.75f; // Luz cálida de las habitaciones.
@@ -179,6 +194,7 @@ public class clase4 extends clase3 {
         entero("uEmision", 0); // Restablece la iluminación normal de los demás elementos.
     }
 
+    // ==================== AQUI SE CREAN PASOS PEATONALES (RAYAS CEBRA) ====================
     /** Pinta pasos peatonales que cruzan la calle hacia la manzana vecina del este y la del sur, junto al cruce. */
     private void dibujarPasosPeatonales(int fila, int columna, float x, float z) {
         boolean vecinaEste = columna + 2 < MAPA[fila].length && MAPA[fila][columna + 2] != 0; // Hay manzana al otro lado de la calle este.
@@ -194,20 +210,21 @@ public class clase4 extends clase3 {
         }
     }
 
+    // ==================== AQUI SE CREA LA LOGICA Y CICLO DEL SEMAFORO (VERDE, AMARILLO, ROJO) ====================
     /**
      * Devuelve el estado del semáforo del cruce noreste de una manzana: ROJO, AMARILLO o VERDE.
      * vertical = false: luz de la calle horizontal (fila, este-oeste);
      * vertical = true: luz de la calle vertical (columna, norte-sur). Nunca están en verde a la vez.
      */
     protected int faseSemaforo(int fila, int columna, boolean vertical) {
-        float segundo = cicloSemaforo(fila, columna, vertical); // Posición dentro del ciclo de 14 s.
-        if (segundo < FIN_ROJO) { // Primeros 7.5 segundos.
-            return ROJO; // Rojo.
+        float segundo = cicloSemaforo(fila, columna, vertical);
+        if (segundo < FIN_ROJO) {
+            return ROJO;
         }
-        if (segundo < FIN_VERDE) { // Siguientes 4.5 segundos.
-            return VERDE; // Verde.
+        if (segundo < FIN_VERDE) {
+            return VERDE;
         }
-        return AMARILLO; // Últimos dos segundos.
+        return AMARILLO;
     }
 
     /**
@@ -217,17 +234,18 @@ public class clase4 extends clase3 {
      * Los 9 cruces del centro (ciudad original) cambian juntos; los de los sectores nuevos se intercalan.
      */
     protected float cicloSemaforo(int fila, int columna, boolean vertical) {
-        boolean original = Math.abs(fila - 5) <= 2 && Math.abs(columna - 5) <= 2; // Manzanas de la ciudad original.
-        float desfase = 0; // Los semáforos originales conservan el ciclo sincronizado.
-        if (!original) { // Los semáforos añadidos se intercalan.
-            desfase = ((fila / 2 + columna / 2) % 3) * CICLO / 3; // Manzanas vecinas reciben desfases distintos.
+        boolean original = Math.abs(fila - 5) <= 2 && Math.abs(columna - 5) <= 2;
+        float desfase = 0;
+        if (!original) {
+            desfase = ((fila / 2 + columna / 2) % 3) * CICLO / 3;
         }
-        if (vertical) { // La calle norte-sur funciona al revés que la este-oeste.
-            desfase += CICLO / 2; // Medio ciclo de diferencia.
+        if (vertical) {
+            desfase += CICLO / 2;
         }
-        return (reloj + desfase) % CICLO; // Posición dentro del ciclo.
+        return (reloj + desfase) % CICLO;
     }
 
+    // ==================== AQUI SE DIBUJA SEMAFORO (POSTE, CARCASA Y BOMBILLAS) ====================
     /**
      * Construye un semáforo de cuatro caras: las caras norte y sur muestran la luz de la calle vertical
      * (la ven los autos que van de norte a sur o de sur a norte) y las caras este y oeste la de la calle horizontal.
@@ -249,19 +267,19 @@ public class clase4 extends clase3 {
 
     /** Dibuja una bombilla (0 rojo, 1 amarillo, 2 verde), encendida si coincide con la fase. */
     private void bombilla(int indice, int fase, float x, float y, float z, float anchoX, float anchoZ) {
-        boolean encendida = false; // Parte de una bombilla apagada.
-        if (indice == 0) { // Selecciona la bombilla roja.
-            encendida = fase == ROJO; // Enciende el rojo en su fase.
-        } else if (indice == 1) { // Selecciona la bombilla amarilla.
-            encendida = fase == AMARILLO; // Enciende el amarillo en su fase.
-        } else { // Selecciona la bombilla verde.
-            encendida = fase == VERDE; // Enciende el verde en su fase.
+        boolean encendida = false;
+        if (indice == 0) {
+            encendida = fase == ROJO;
+        } else if (indice == 1) {
+            encendida = fase == AMARILLO;
+        } else {
+            encendida = fase == VERDE;
         }
-        float brillo = 0.15f; // Conserva un color tenue cuando la bombilla está apagada.
-        entero("uEmision", 0); // Configura inicialmente una superficie sin emisión.
-        if (encendida) { // Comprueba si esta bombilla corresponde a la fase activa.
-            brillo = 1; // Usa intensidad completa para su color.
-            entero("uEmision", 1); // Hace que la bombilla se vea encendida.
+        float brillo = 0.15f;
+        entero("uEmision", 0);
+        if (encendida) {
+            brillo = 1;
+            entero("uEmision", 1);
         }
         float rojo = 0; // Componente roja inicialmente ausente.
         float verde = 0; // Componente verde inicialmente ausente.
@@ -276,6 +294,7 @@ public class clase4 extends clase3 {
 
     // ==================== 6. MINIMAPA: SEGUNDO PASE DE DIBUJO ====================
 
+    // ==================== AQUI SE CREA EL MINIMAPA SUPERIOR (SEGUNDO PASE) ====================
     /** Dibuja la escena principal y después la misma ciudad desde arriba, en un recuadro. */
     @Override // Amplía el cuadro completo definido en clase1.
     protected void dibujarFrame() {
@@ -284,32 +303,32 @@ public class clase4 extends clase3 {
         if (!mostrarMapa) { // Comprueba si el usuario ocultó el minimapa con M.
             return; // Conserva únicamente la imagen principal.
         }
-        int dimensionMenor = Math.min(ancho, alto); // Busca la dimensión que limita el espacio disponible.
+        int dimensionMenor = Math.min(ancho, alto);
         int lado = Math.min(280, dimensionMenor / 3); // Limita el mapa a 280 píxeles y a un tercio de la ventana.
         int margen = Math.min(18, dimensionMenor / 20); // Calcula una separación adaptable respecto a los bordes.
-        int x = ancho - lado - margen; // Ubica el recuadro cerca del borde derecho.
+        int x = ancho - lado - margen;
         int y = alto - lado - margen; // Ubica el recuadro arriba; OpenGL mide Y desde abajo.
-        mapaX = x; // Guarda el borde izquierdo para los rótulos de la interfaz.
-        mapaY = y; // Guarda el borde inferior del recuadro.
-        mapaLado = lado; // Guarda el tamaño del recuadro.
+        mapaX = x;
+        mapaY = y;
+        mapaLado = lado;
         glEnable(GL_SCISSOR_TEST); // Activa el recorte para no borrar el resto de la escena.
         glScissor(x - 3, y - 3, lado + 6, lado + 6); // Selecciona el mapa más un borde de tres píxeles.
         glClearColor(0.8f, 0.87f, 0.94f, 1); // Define un color claro para el marco.
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Borra solo el recuadro exterior gracias al scissor.
         glScissor(x, y, lado, lado); // Reduce el recorte al interior del minimapa.
         glClearColor(0.06f, 0.10f, 0.15f, 1); // Define el fondo oscuro del mapa.
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Limpia color y profundidad dentro del mapa.
-        glViewport(x, y, lado, lado); // Redirige la proyección al recuadro cuadrado.
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(x, y, lado, lado);
         entero("uMapa", 1); // Selecciona la proyección ortográfica del shader de clase1.
         vistaMapa = true; // Indica a escena() que omita decoración pequeña y baliza flotante.
-        try { // Asegura que el estado de dibujo se restaure incluso si el segundo pase falla.
-            escena(); // Dibuja otra vez la misma ciudad, ahora vista desde arriba.
-            dibujarIndicadorAuto(); // Resalta la posición y el frente del jugador en el mapa.
-        } finally { // El siguiente cuadro debe volver a la configuración de pantalla completa.
-            vistaMapa = false; // Reactiva los detalles de la escena principal.
-            entero("uMapa", 0); // Recupera la proyección en perspectiva.
-            glDisable(GL_SCISSOR_TEST); // Permite que la próxima limpieza abarque toda la pantalla.
-            glViewport(0, 0, ancho, alto); // Recupera el área de dibujo de la ventana completa.
+        try {
+            escena();
+            dibujarIndicadorAuto();
+        } finally {
+            vistaMapa = false;
+            entero("uMapa", 0);
+            glDisable(GL_SCISSOR_TEST);
+            glViewport(0, 0, ancho, alto);
         }
         if (glGetError() != GL_NO_ERROR) { // Comprueba que el pase del mapa no haya generado errores OpenGL.
             throw new IllegalStateException("Error OpenGL en minimapa"); // Expone el error en la consola.
@@ -331,6 +350,9 @@ public class clase4 extends clase3 {
             float trazoZ = -(float) Math.cos(giro); // Dirección del trazo en Z.
             cajaGirada(puntaX - trazoX * 1.6f, 26, puntaZ - trazoZ * 1.6f, 1.0f, 0.1f, 3.2f, 1, 1, 1, giro); // Trazo desde la punta hacia atrás.
         }
+        // Indicador de la chata en el minimapa (carrito enganchado)
+        cajaGirada(chataX, 24.8f, chataZ, 3.4f, 0.1f, 3.6f, 1, 1, 1, anguloChata); // Borde blanco de la chata.
+        cajaGirada(chataX, 25.0f, chataZ, 2.6f, 0.1f, 2.8f, 0.95f, 0.45f, 0.15f, anguloChata); // Caja de la chata.
     }
 
     /** Punto de entrada del proyecto final. */

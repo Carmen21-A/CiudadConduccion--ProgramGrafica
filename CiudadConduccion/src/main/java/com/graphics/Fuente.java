@@ -4,6 +4,13 @@ import java.text.Normalizer; // Permite quitar tildes antes de buscar cada letra
 import java.util.HashMap; // Guarda la forma de cada carácter.
 import java.util.Map; // Define el tipo del diccionario de caracteres.
 
+// =========================================================================================
+// FUENTE JAVA :: AQUI SE CREA:
+// - FUENTE DE MAPA DE BITS 5x7 PARA TEXTOS 2D Y 3D
+// - MATRICES DE BITS DE LETRAS, NUMEROS Y SIMBOLOS
+// - CALCULO DE ANCHO DE CADENAS DE TEXTO Y RECORRIDO DE GLIFOS
+// =========================================================================================
+
 /**
  * FUENTE DE MAPA DE BITS 5 x 7 PARA CLASE5.
  * Cada carácter es una matriz de 7 filas por 5 columnas; cada fila es un número de 5 bits.

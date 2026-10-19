@@ -1,11 +1,13 @@
 package com.graphics; // Comparte el paquete con las cinco lecciones.
 
-/**
- * VEHÍCULO AUTÓNOMO DE CLASE5.
- * Guarda posición, orientación y velocidad propias y recorre en bucle una ruta de cruces.
- * Circula por el carril derecho: cada cruce se desplaza CARRIL unidades hacia la derecha del sentido de marcha.
- * No usa OpenGL, por eso las pruebas pueden simular su recorrido sin abrir una ventana.
- */
+// =========================================================================================
+// VEHICULO AUTONOMO JAVA :: AQUI SE CREA:
+// - LOGICA DE LOS VEHICULOS DEL TRAFICO AUTONOMO DE LA CIUDAD
+// - CONDUCCION POR EL CARRIL DERECHO DE LAS CALLES
+// - SISTEMA DE FRENADO ANTE SEMAFOROS EN ROJO Y OTROS AUTOS
+// - FISICA DE ACELERACION, CRUCERO Y GIRO EN CRUCES
+// =========================================================================================
+
 class VehiculoAutonomo {
 
     static final float CARRIL = 2.3f; // Distancia del centro de la calle al centro del carril derecho.

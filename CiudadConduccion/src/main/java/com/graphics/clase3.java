@@ -1,8 +1,17 @@
-package com.graphics; // Mantiene esta lección junto a las clases anteriores.
+package com.graphics;
 
-import java.util.ArrayList; // Permite reunir las farolas generadas a partir del mapa.
-import java.util.List; // Define el tipo de la lista de farolas.
-import static org.lwjgl.glfw.GLFW.*; // Incluye las constantes de las teclas N y F.
+import java.util.ArrayList;
+import java.util.List;
+import static org.lwjgl.glfw.GLFW.*;
+
+// =========================================================================================
+// CLASE 3 JAVA :: AQUI SE CREA:
+// - SISTEMA DE ILUMINACION DIA Y NOCHE (TECLA N)
+// - INTERRUPTOR DE FAROS DEL VEHICULO (TECLA F)
+// - POSICIONAMIENTO DE LAS FAROLAS DE LA CIUDAD (crearLuces)
+// - DIBUJO 3D DE FAROLES: POSTE OSCURO Y BOMBILLA CALIDA EMISIVA
+// - SHADER CON CONOS DE LUZ DE FAROS DEL AUTO Y LUZ NOCTURNA DE FAROLAS
+// =========================================================================================
 
 /**
  * CLASE 3: ILUMINACIÓN DE LA CIUDAD.
@@ -12,10 +21,11 @@ import static org.lwjgl.glfw.GLFW.*; // Incluye las constantes de las teclas N y
 public class clase3 extends clase2 {
 
     // ==================== 1. ESTADO Y POSICIONES DE LAS LUCES ====================
-    protected boolean noche = true; // Inicia la escena con iluminación nocturna.
-    protected boolean faros = true; // Inicia los focos del auto encendidos.
-    protected static final float[][] LUCES = crearLuces(); // Cada fila contiene la posición X, Y, Z de una bombilla.
+    protected boolean noche = true;
+    protected boolean faros = true;
+    protected static final float[][] LUCES = crearLuces();
 
+    // ==================== AQUI SE CREAN LAS FAROLAS (POSICIONES EN CADA MANZANA) ====================
     /** Coloca una farola en la esquina noroeste de la acera de cada manzana, incluidas las de los sectores nuevos. */
     private static float[][] crearLuces() {
         List<float[]> luces = new ArrayList<>(); // Acumula las farolas porque su cantidad depende del mapa.
@@ -33,30 +43,31 @@ public class clase3 extends clase2 {
 
     // ==================== 2. CONTROLES E INDICADORES ====================
 
+    // ==================== AQUI SE CREA EL CONTROL DE DIA/NOCHE Y FAROS (TECLAS N Y F) ====================
     /** Añade los interruptores de iluminación a los controles existentes. */
-    @Override // Amplía el método de teclado de clase2.
+    @Override
     protected void tecla(int key) {
-        super.tecla(key); // Conserva ESC, C y R.
-        if (key == GLFW_KEY_N) { // Comprueba la tecla de cambio de ambiente.
-            noche = !noche; // Alterna entre noche y día.
+        super.tecla(key);
+        if (key == GLFW_KEY_N) {
+            noche = !noche;
         }
-        if (key == GLFW_KEY_F) { // Comprueba el interruptor de los focos del auto.
-            faros = !faros; // Enciende los faros si estaban apagados y viceversa.
+        if (key == GLFW_KEY_F) {
+            faros = !faros;
         }
     }
 
     /** Prepara el texto que clase2 incorpora al título de la ventana. */
-    @Override // Añade información al espacio reservado para indicadores.
+    @Override
     protected String estadoExtra() {
-        String ambiente = "dia"; // Usa día como texto inicial.
-        if (noche) { // Comprueba si está seleccionado el ambiente nocturno.
-            ambiente = "noche"; // Reemplaza el texto por el estado real.
+        String ambiente = "dia";
+        if (noche) {
+            ambiente = "noche";
         }
-        String estadoFaros = "OFF"; // Usa apagado como texto inicial de los focos.
-        if (faros) { // Comprueba si las luces del auto están activas.
-            estadoFaros = "ON"; // Indica que los faros están encendidos.
+        String estadoFaros = "OFF";
+        if (faros) {
+            estadoFaros = "ON";
         }
-        return " | N: " + ambiente + " | F: faros " + estadoFaros; // Devuelve ambos indicadores y sus teclas.
+        return " | N: " + ambiente + " | F: faros " + estadoFaros;
     }
 
     // ==================== 3. DATOS QUE RECIBE EL SHADER ====================
@@ -73,17 +84,17 @@ public class clase3 extends clase2 {
     /** Actualiza los uniforms de iluminación antes de dibujar la ciudad. */
     @Override // Sustituye el método vacío de clase1.
     protected void prepararLuces() {
-        entero("uNoche", 0); // Inicialmente configura iluminación diurna.
-        if (noche) { // Revisa el modo elegido por el usuario.
-            entero("uNoche", 1); // Comunica al shader que debe usar iluminación nocturna.
+        entero("uNoche", 0);
+        if (noche) {
+            entero("uNoche", 1);
         }
-        entero("uFaros", 0); // Inicialmente desactiva los conos de luz del auto.
-        if (faros) { // Revisa el interruptor de los faros.
-            entero("uFaros", 1); // Activa el cálculo de los dos focos en el shader.
+        entero("uFaros", 0);
+        if (faros) {
+            entero("uFaros", 1);
         }
-        entero("uEmision", 0); // Hace que los objetos normales reciban iluminación.
-        float[] cielo = colorFondo(); // Color del fondo actual.
-        vector("uCielo", cielo[0], cielo[1], cielo[2]); // La bruma lejana se funde con el cielo.
+        entero("uEmision", 0);
+        float[] cielo = colorFondo();
+        vector("uCielo", cielo[0], cielo[1], cielo[2]);
 
         for (int indice = 0; indice < LUCES.length; indice++) { // Recorre todas las bombillas de la ciudad.
             float x = LUCES[indice][0]; // Lee la coordenada horizontal de la bombilla.
@@ -104,6 +115,7 @@ public class clase3 extends clase2 {
     @Override // Añade geometría a la ciudad y al auto heredados.
     protected void escena() {
         super.escena(); // Dibuja la ciudad y el vehículo de las primeras dos lecciones.
+        // ==================== AQUI SE DIBUJA FAROL (POSTE Y BOMBILLA) ====================
         for (float[] luz : LUCES) { // Selecciona una farola a la vez.
             float x = luz[0]; // Lee la posición horizontal del poste.
             float y = luz[1]; // Lee la altura de la bombilla.
@@ -168,6 +180,7 @@ public class clase3 extends clase2 {
                     luz *= 0.72 + 0.28 * smoothstep(0.0, 2.5, vMundo.y); // La base de cada pared queda algo más oscura, como en contacto con el suelo.
                 }
 
+                // ==================== AQUI SE CALCULA LA ILUMINACION NOCTURNA DE FAROLAS ====================
                 if (uNoche == 1) { // Calcula la iluminación de las farolas solo de noche.
                     for (int indice = 0; indice < NUM_LUCES; indice++) { // Acumula el aporte de cada bombilla.
                         vec3 haciaLuz = uLuces[indice] - vMundo; // Forma el vector desde la superficie hacia la farola.
@@ -179,6 +192,7 @@ public class clase3 extends clase2 {
                     }
                 }
 
+                // ==================== AQUI SE CALCULA LA ILUMINACION DE FAROS DEL AUTO ====================
                 if (uFaros == 1) { // Calcula los conos únicamente si están encendidos.
                     for (int indice = 0; indice < 2; indice++) { // Repite el cálculo para los dos faros.
                         vec3 lateral = vec3(-uFrente.z, 0.0, uFrente.x); // Obtiene la dirección hacia el lado derecho del auto.

@@ -16,6 +16,18 @@ import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL11.glGetError;
 import static org.lwjgl.opengl.GL33.*; // Permite activar la mezcla de colores y desactivar la profundidad en la interfaz.
 
+// =========================================================================================
+// CLASE 5 JAVA :: AQUI SE CREA:
+// - TRAFICO AUTONOMO (VEHICULOS CON RUTAS Y COLISIONES)
+// - CREACION DEL AVION (TRAYECTORIA DE VUELO Y DIBUJO 3D EN EL CIELO)
+// - PEATONES (PERSONAS QUE CAMINAN POR LAS ACERAS)
+// - LETREROS DE EDIFICIOS Y NEGOCIOS (HOSPITAL, HOTEL, POLICIA, TIENDA, ETC.)
+// - LETREROS GIGANTES DE SECTORES (CENTRO, NORTE, SUR, ESTE, OESTE)
+// - CAMARA EN PRIMERA PERSONA CON CONTROL DEL RATON
+// - COSITO DE DATOS DE LA IMAGEN: PANEL DE ESTADO HUD (VELOCIDAD, AMBIENTE, FAROS, ETC.)
+// - INTERFAZ 2D: MENU DE INICIO, PANTALLA DE AYUDA (H), PAUSA (P) Y VICTORIA
+// =========================================================================================
+
 /**
  * CLASE 5: MEJORAS OPCIONALES — TRÁFICO AUTÓNOMO, INTERFAZ Y SECTORES.
  * Orden de lectura: estado, controles, actualización del tráfico, cámara en primera persona, dibujo 3D, interfaz 2D y utilidades.
@@ -41,26 +53,27 @@ public class clase5 extends clase4 {
     private double ratonX, ratonY; // Última posición leída del cursor.
     private float recorrido = 0; // Distancia recorrida: produce el leve vaivén de la cámara en primera persona.
 
+    // ==================== AQUI SE CREAN LAS RUTAS DEL TRAFICO AUTONOMO ====================
     /** Rutas del tráfico: pares (columna, fila) de cruces del mapa recorridos en circuito cerrado. */
    protected static final int[][] RUTAS = {
-        {0, 0, 10, 0},// 10, 10, 0, 10}, // Taxi: vuelta exterior por las calles nuevas del borde.
-        {2, 2, 2, 8, 8, 8, 8, 2}, // Segundo vehículo: anillo alrededor del centro.
-        {4, 0, 4, 6, 10, 6, 10, 0}, // Tercer vehículo: sectores norte y este.
-        {0, 4, 6, 4, 6, 10, 0, 10}, // Cuarto vehículo: sectores oeste y sur.
-        {0, 0, 0, 10, 10, 10, 10, 0}, // Quinto vehículo: vuelta exterior en sentido contrario al taxi.
-        {8, 2, 8, 8, 2, 8, 2, 2}, // Sexto vehículo: anillo central en sentido contrario.
-        {6, 0, 6, 4, 2, 4, 2, 0}, // Séptimo vehículo: circuito del sector norte.
-        {4, 4, 4, 10, 10, 10, 10, 4} // Octavo vehículo: sectores sur y este.
+        {0, 0, 10, 0},
+        {2, 2, 2, 8, 8, 8, 8, 2},
+        {4, 0, 4, 6, 10, 6, 10, 0},
+        {0, 4, 6, 4, 6, 10, 0, 10},
+        {0, 0, 0, 10, 10, 10, 10, 0},
+        {8, 2, 8, 8, 2, 8, 2, 2},
+        {6, 0, 6, 4, 2, 4, 2, 0},
+        {4, 4, 4, 10, 10, 10, 10, 4}
     };
-    private static final float[][] COLORES_TRAFICO = { // Color de cada vehículo autónomo.
-        {1.0f, 0.78f, 0.10f}, // Taxi amarillo.
-        {0.20f, 0.70f, 0.35f}, // Verde.
-        {0.90f, 0.90f, 0.92f}, // Blanco.
-        {0.55f, 0.30f, 0.80f}, // Morado.
-        {0.15f, 0.45f, 0.95f}, // Azul.
-        {0.95f, 0.50f, 0.10f}, // Naranja.
-        {0.10f, 0.75f, 0.80f}, // Turquesa.
-        {0.85f, 0.20f, 0.45f} // Rosado.
+    private static final float[][] COLORES_TRAFICO = {
+        {1.0f, 0.78f, 0.10f},
+        {0.20f, 0.70f, 0.35f},
+        {0.90f, 0.90f, 0.92f},
+        {0.55f, 0.30f, 0.80f},
+        {0.15f, 0.45f, 0.95f},
+        {0.95f, 0.50f, 0.10f},
+        {0.10f, 0.75f, 0.80f},
+        {0.85f, 0.20f, 0.45f}
     };
     private static final float[] CRUCEROS = {9.5f, 7, 9, 7.5f, 8, 7.5f, 6.5f, 8.5f}; // Velocidad de crucero de cada vehículo.
 
@@ -79,20 +92,21 @@ public class clase5 extends clase4 {
     }
 
     /** Negocios por altura del edificio (filas de ventanas, ver clase1.PISOS). */
-    protected static final String[] COMERCIOS = {"TIENDA", "PANADERIA", "PIZZERIA", "FARMACIA", "MERCADO", "GIMNASIO", "CAFE", "ESCUELA"}; // 2 o 3 ventanas.
-    protected static final String[] SERVICIOS = {"BANCO", "CINE", "POLICIA", "MUSEO", "UNIVERSIDAD"}; // 4 o 5 ventanas.
-    protected static final String[] EDIFICIOS_ALTOS = {"HOSPITAL", "OFICINAS", "APARTAMENTOS"}; // 6 ventanas.
-    protected static final List<Negocio> NEGOCIOS = crearNegocios(); // Letreros de toda la ciudad.
+    protected static final String[] COMERCIOS = {"TIENDA", "PANADERIA", "PIZZERIA", "FARMACIA", "MERCADO", "GIMNASIO", "CAFE", "ESCUELA"};
+    protected static final String[] SERVICIOS = {"BANCO", "CINE", "POLICIA", "MUSEO", "UNIVERSIDAD"};
+    protected static final String[] EDIFICIOS_ALTOS = {"HOSPITAL", "OFICINAS", "APARTAMENTOS"};
+    protected static final List<Negocio> NEGOCIOS = crearNegocios();
 
     /** Cantidad de filas de ventanas de un edificio; usa el mismo ciclo que clase4.dibujarVentanas(). */
     protected static int filasDeVentanas(int fila, int columna) {
-        int filas = 0; // Cuenta los pisos con ventanas.
-        for (float y = 1.7f; y < alturaEdificio(fila, columna); y += 2) { // Mismo recorrido que las ventanas.
-            filas++; // Un piso más.
+        int filas = 0;
+        for (float y = 1.7f; y < alturaEdificio(fila, columna); y += 2) {
+            filas++;
         }
-        return filas; // Total de filas de ventanas.
+        return filas;
     }
 
+    // ==================== AQUI SE CREAN LOS NEGOCIOS Y LETREROS DE LOS EDIFICIOS ====================
     /**
      * Reparte los negocios por altura:
      * 8 edificios de 2-3 ventanas: un comercio cada uno;
@@ -100,59 +114,59 @@ public class clase5 extends clase4 {
      * 4 de 6: hospital, oficinas y apartamentos; 3 de 7-8: hoteles.
      */
     private static List<Negocio> crearNegocios() {
-        List<Negocio> negocios = new ArrayList<>(); // Lista resultante.
-        negocios.add(negocio(1, 1, "TIENDA")); // 3 ventanas.
-        negocios.add(negocio(1, 3, "PANADERIA")); // 2 ventanas.
-        negocios.add(negocio(1, 9, "PIZZERIA")); // 3 ventanas.
-        negocios.add(negocio(7, 1, "FARMACIA")); // 2 ventanas.
-        negocios.add(negocio(7, 9, "MERCADO")); // 3 ventanas.
-        negocios.add(negocio(9, 1, "GIMNASIO")); // 2 ventanas, junto a la salida del jugador.
-        negocios.add(negocio(9, 7, "CAFE")); // 3 ventanas.
-        negocios.add(negocio(9, 9, "ESCUELA")); // 2 ventanas.
-        negocios.add(negocio(1, 7, "UNIVERSIDAD")); // 5 ventanas.
-        negocios.add(new Negocio(1, 7, true, "MUSEO")); // Museo universitario en la fachada este del mismo edificio.
-        negocios.add(negocio(5, 1, "POLICIA")); // 4 ventanas.
-        negocios.add(negocio(5, 9, "BANCO")); // 5 ventanas.
-        negocios.add(negocio(9, 5, "CINE")); // 4 ventanas.
-        negocios.add(negocio(3, 3, "HOSPITAL")); // 6 ventanas.
-        negocios.add(negocio(3, 7, "OFICINAS")); // 6 ventanas.
-        negocios.add(negocio(7, 3, "APARTAMENTOS")); // 6 ventanas.
-        negocios.add(negocio(7, 7, "OFICINAS")); // 6 ventanas.
-        negocios.add(negocio(3, 5, "HOTEL")); // 8 ventanas.
-        negocios.add(negocio(5, 5, "HOTEL")); // 7 ventanas.
-        negocios.add(negocio(7, 5, "HOTEL")); // 8 ventanas.
-        return negocios; // Todos los letreros de negocios.
+        List<Negocio> negocios = new ArrayList<>();
+        negocios.add(negocio(1, 1, "TIENDA"));
+        negocios.add(negocio(1, 3, "PANADERIA"));
+        negocios.add(negocio(1, 9, "PIZZERIA"));
+        negocios.add(negocio(7, 1, "FARMACIA"));
+        negocios.add(negocio(7, 9, "MERCADO"));
+        negocios.add(negocio(9, 1, "GIMNASIO"));
+        negocios.add(negocio(9, 7, "CAFE"));
+        negocios.add(negocio(9, 9, "ESCUELA"));
+        negocios.add(negocio(1, 7, "UNIVERSIDAD"));
+        negocios.add(new Negocio(1, 7, true, "MUSEO"));
+        negocios.add(negocio(5, 1, "POLICIA"));
+        negocios.add(negocio(5, 9, "BANCO"));
+        negocios.add(negocio(9, 5, "CINE"));
+        negocios.add(negocio(3, 3, "HOSPITAL"));
+        negocios.add(negocio(3, 7, "OFICINAS"));
+        negocios.add(negocio(7, 3, "APARTAMENTOS"));
+        negocios.add(negocio(7, 7, "OFICINAS"));
+        negocios.add(negocio(3, 5, "HOTEL"));
+        negocios.add(negocio(5, 5, "HOTEL"));
+        negocios.add(negocio(7, 5, "HOTEL"));
+        return negocios;
     }
 
     /** Crea el letrero en la fachada sur, o en la este si la acera sur ya tiene el letrero del sector. */
     private static Negocio negocio(int fila, int columna, String nombre) {
-        boolean tieneSector = false; // Indica si su acera sur tiene el letrero del sector.
-        for (int[] letrero : LETREROS) { // Revisa los letreros de sector.
-            tieneSector |= letrero[0] == fila && letrero[1] == columna; // Misma manzana.
+        boolean tieneSector = false;
+        for (int[] letrero : LETREROS) {
+            tieneSector |= letrero[0] == fila && letrero[1] == columna;
         }
-        return new Negocio(fila, columna, tieneSector, nombre); // Fachada este si la sur está ocupada.
+        return new Negocio(fila, columna, tieneSector, nombre);
     }
 
     /** Color del panel según el tipo de negocio. */
     private static float[] colorNegocio(String nombre) {
-        switch (nombre) { // Cada negocio tiene un color reconocible.
-            case "HOSPITAL": return new float[] {0.80f, 0.08f, 0.10f}; // Rojo.
-            case "HOTEL": return new float[] {0.55f, 0.15f, 0.45f}; // Morado.
-            case "BANCO": return new float[] {0.10f, 0.25f, 0.55f}; // Azul.
-            case "CINE": return new float[] {0.60f, 0.10f, 0.10f}; // Granate.
-            case "POLICIA": return new float[] {0.08f, 0.15f, 0.50f}; // Azul oscuro.
-            case "FARMACIA": return new float[] {0.05f, 0.50f, 0.30f}; // Verde.
-            case "PANADERIA": return new float[] {0.55f, 0.35f, 0.10f}; // Marrón.
-            case "PIZZERIA": return new float[] {0.50f, 0.12f, 0.12f}; // Rojo oscuro.
-            case "MERCADO": return new float[] {0.60f, 0.35f, 0.05f}; // Naranja.
-            case "GIMNASIO": return new float[] {0.30f, 0.30f, 0.35f}; // Gris.
-            case "CAFE": return new float[] {0.45f, 0.28f, 0.12f}; // Café.
-            case "ESCUELA": return new float[] {0.15f, 0.35f, 0.60f}; // Azul claro.
-            case "MUSEO": return new float[] {0.35f, 0.30f, 0.15f}; // Ocre.
-            case "UNIVERSIDAD": return new float[] {0.30f, 0.10f, 0.45f}; // Violeta.
-            case "OFICINAS": return new float[] {0.20f, 0.30f, 0.40f}; // Gris azulado.
-            case "APARTAMENTOS": return new float[] {0.40f, 0.25f, 0.20f}; // Ladrillo.
-            default: return new float[] {0.10f, 0.45f, 0.20f}; // Tienda: verde oscuro.
+        switch (nombre) {
+            case "HOSPITAL": return new float[] {0.80f, 0.08f, 0.10f};
+            case "HOTEL": return new float[] {0.55f, 0.15f, 0.45f};
+            case "BANCO": return new float[] {0.10f, 0.25f, 0.55f};
+            case "CINE": return new float[] {0.60f, 0.10f, 0.10f};
+            case "POLICIA": return new float[] {0.08f, 0.15f, 0.50f};
+            case "FARMACIA": return new float[] {0.05f, 0.50f, 0.30f};
+            case "PANADERIA": return new float[] {0.55f, 0.35f, 0.10f};
+            case "PIZZERIA": return new float[] {0.50f, 0.12f, 0.12f};
+            case "MERCADO": return new float[] {0.60f, 0.35f, 0.05f};
+            case "GIMNASIO": return new float[] {0.30f, 0.30f, 0.35f};
+            case "CAFE": return new float[] {0.45f, 0.28f, 0.12f};
+            case "ESCUELA": return new float[] {0.15f, 0.35f, 0.60f};
+            case "MUSEO": return new float[] {0.35f, 0.30f, 0.15f};
+            case "UNIVERSIDAD": return new float[] {0.30f, 0.10f, 0.45f};
+            case "OFICINAS": return new float[] {0.20f, 0.30f, 0.40f};
+            case "APARTAMENTOS": return new float[] {0.40f, 0.25f, 0.20f};
+            default: return new float[] {0.10f, 0.45f, 0.20f};
         }
     }
 
@@ -160,11 +174,12 @@ public class clase5 extends clase4 {
     protected Peaton peaton; // Mantiene compatibilidad con el primer peatón y con las pruebas.
     protected List<Peaton> peatones = new ArrayList<>(); // Lista para múltiples personas autónomas.
 //======
+    // ==================== AQUI SE CREA LA DECLARACION DEL AVION ====================
     protected float avionX; // Posición X del avión; vuela de este (+X) a oeste (-X).
     protected float avionZ; // Calle imaginaria (Z) por la que pasa en esta vuelta.
     private int pasadasAvion = 0; // Cuenta las pasadas para variar la trayectoria.
     private float tiempoAvion = 0; // Segundos desde que empezó la pasada actual.
-    private static final float PERIODO_AVION = 50; // Pasa un avión cada 30 segundos.
+    private static final float PERIODO_AVION = 30; // Pasa un avión cada 30 segundos.
     private static final float[] CARRILES_AVION = {-20, 15, -45, 40}; // Z de cada pasada sucesiva.
     private static final float ALTURA_AVION = 30; // Altura de vuelo, por encima de las torres más altas.
     private static final float VELOCIDAD_AVION = 14; // Unidades por segundo.
@@ -189,6 +204,7 @@ public class clase5 extends clase4 {
         // peatones.add(new Peaton(MAPA.length - 2, MAPA.length - 2, 5, 33)); // Peatón 4: Manzana sureste
         // peatones.add(new Peaton(3, 3, 0, 42));               // Peatón 5: Manzana central
 
+        // ==================== AQUI SE CREA LA TRAYECTORIA INICIAL DEL AVION ====================
         pasadasAvion = 0; // Primera pasada.
         tiempoAvion = 0; // La primera pasada empieza de inmediato.
         avionX = LIMITE + 40; // Empieza fuera del mapa, al este.
@@ -226,25 +242,25 @@ public class clase5 extends clase4 {
     // ==================== 2. CONTROLES: MENÚ, PAUSA Y AYUDA ====================
 
     /** Añade ENTER, P, H, la tercera vista de C y V a los controles anteriores. */
-    @Override // Amplía las teclas de clase4.
+    @Override
     protected void tecla(int key) {
-        super.tecla(key); // Conserva ESC, C, R, N, F y M.
-        if ((key == GLFW_KEY_ENTER || key == GLFW_KEY_KP_ENTER) && enMenu) { // ENTER inicia el recorrido.
-            enMenu = false; // Cierra el menú de inicio.
+        super.tecla(key);
+        if ((key == GLFW_KEY_ENTER || key == GLFW_KEY_KP_ENTER) && enMenu) {
+            enMenu = false;
         }
-        if (key == GLFW_KEY_P && !enMenu) { // P solo pausa una partida ya iniciada.
-            pausado = !pausado; // Alterna entre pausa y juego.
+        if (key == GLFW_KEY_P && !enMenu) {
+            pausado = !pausado;
         }
-        if (key == GLFW_KEY_H) { // H muestra u oculta la ayuda.
-            mostrarAyuda = !mostrarAyuda; // Alterna el panel de controles.
+        if (key == GLFW_KEY_H) {
+            mostrarAyuda = !mostrarAyuda;
         }
-        if (key == GLFW_KEY_C) { // clase2 solo conoce dos vistas; aquí se agrega la primera persona.
-            modoCamara = (modoCamara + 1) % 3; // Seguimiento -> primera persona -> aérea -> seguimiento.
-            camaraAerea = modoCamara == AEREA; // clase2 dibuja la vista aérea solo en ese modo.
-            centrarMirada(); // Cada vista empieza mirando al frente.
+        if (key == GLFW_KEY_C) {
+            modoCamara = (modoCamara + 1) % 3;
+            camaraAerea = modoCamara == AEREA;
+            centrarMirada();
         }
-        if (key == GLFW_KEY_V) { // V vuelve a mirar al frente del auto.
-            centrarMirada(); // Quita el giro de la cabeza.
+        if (key == GLFW_KEY_V) {
+            centrarMirada();
         }
     }
 
@@ -255,12 +271,12 @@ public class clase5 extends clase4 {
     }
 
     /** Reinicia también el tráfico y quita la pausa. */
-    @Override // Amplía el reinicio de clase4.
+    @Override
     protected void reiniciar() {
-        super.reiniciar(); // Restaura auto, entregas y cronómetro.
-        crearTrafico(); // Devuelve el tráfico a sus posiciones iniciales.
-        crearPeatonYAvion(); // Devuelve peatón y avión a su inicio.
-        pausado = false; // Comienza el nuevo recorrido inmediatamente.
+        super.reiniciar();
+        crearTrafico();
+        crearPeatonYAvion();
+        pausado = false;
     }
 
     // ==================== 3. ACTUALIZACIÓN: PAUSA Y TRÁFICO ====================
@@ -310,6 +326,7 @@ public class clase5 extends clase4 {
         ratonNuevo = false; // Las próximas lecturas ya producen giro.
     }
 
+    // ==================== AQUI SE ACTUALIZA EL MOVIMIENTO Y VUELO DEL AVION ====================
     /** Cada 30 s un avión cruza la ciudad de este a oeste (tarda unos 14 s) y la siguiente pasada usa otra trayectoria. */
     protected void actualizarAvion(float deltaTime) {
         tiempoAvion += deltaTime; // Avanza el tiempo de la pasada.
@@ -327,8 +344,16 @@ public class clase5 extends clase4 {
         boolean[] detener = new boolean[cantidad]; // Decisión de cada vehículo para este cuadro.
         for (int i = 0; i < cantidad; i++) { // Revisa cada vehículo.
             VehiculoAutonomo vehiculo = trafico.get(i); // Vehículo que decide.
-            if (vehiculo.tieneDelante(autoX, autoZ, 7, 2.2f)) { // El jugador está delante en su carril.
-                detener[i] = true; // Cede el paso al jugador.
+            if (Math.abs(autoX) <= LIMITE) { // Comprueba si el jugador está en el mapa
+                float frenteChataX = -(float) Math.sin(anguloChata);
+                float frenteChataZ = -(float) Math.cos(anguloChata);
+                float atrasChataX = chataX - frenteChataX * 0.9f;
+                float atrasChataZ = chataZ - frenteChataZ * 0.9f;
+                if (vehiculo.tieneDelante(autoX, autoZ, 7.5f, 2.4f) ||
+                    vehiculo.tieneDelante(chataX, chataZ, 7.5f, 2.4f) ||
+                    vehiculo.tieneDelante(atrasChataX, atrasChataZ, 7.5f, 2.4f)) { // El jugador o su chata está delante en su carril.
+                    detener[i] = true; // Cede el paso al jugador y a la chata.
+                }
             }
             if (debeFrenarPorSemaforo(vehiculo)) { // El próximo cruce tiene el semáforo en rojo (o amarillo con tiempo para frenar).
                 detener[i] = true; // Se detiene antes del paso peatonal.
@@ -359,32 +384,32 @@ public class clase5 extends clase4 {
      * El vehículo mira la luz de la calle por la que circula y frena con rojo, o con amarilla si todavía está lejos.
      */
     protected boolean debeFrenarPorSemaforo(VehiculoAutonomo vehiculo) {
-        for (int fila = 1; fila < MAPA.length; fila += 2) { // Recorre las filas de manzanas.
-            for (int columna = 1; columna < MAPA[fila].length; columna += 2) { // Recorre las columnas de manzanas.
-                if (MAPA[fila][columna] == 0) { // Solo las manzanas tienen semáforo.
-                    continue; // Pasa a la siguiente.
+        for (int fila = 1; fila < MAPA.length; fila += 2) {
+            for (int columna = 1; columna < MAPA[fila].length; columna += 2) {
+                if (MAPA[fila][columna] == 0) {
+                    continue;
                 }
-                boolean vertical = Math.abs(vehiculo.frenteZ()) > Math.abs(vehiculo.frenteX()); // Circula de norte a sur o de sur a norte.
-                int fase = faseSemaforo(fila, columna, vertical); // Estado de la luz que corresponde a su calle.
-                if (fase == VERDE) { // Con verde se puede pasar.
-                    continue; // No hace falta medir la distancia.
+                boolean vertical = Math.abs(vehiculo.frenteZ()) > Math.abs(vehiculo.frenteX());
+                int fase = faseSemaforo(fila, columna, vertical);
+                if (fase == VERDE) {
+                    continue;
                 }
-                float cruceX = centro(columna + 1) - vehiculo.x; // Vector hacia el centro del cruce en X.
-                float cruceZ = centro(fila - 1) - vehiculo.z; // Vector hacia el centro del cruce en Z.
-                float adelante = cruceX * vehiculo.frenteX() + cruceZ * vehiculo.frenteZ(); // Distancia a lo largo de la marcha.
-                float lateral = Math.abs(cruceX * vehiculo.frenteZ() - cruceZ * vehiculo.frenteX()); // Separación lateral.
-                if (lateral > 4) { // El cruce no está sobre la calle por la que circula.
-                    continue; // Lo ignora.
+                float cruceX = centro(columna + 1) - vehiculo.x;
+                float cruceZ = centro(fila - 1) - vehiculo.z;
+                float adelante = cruceX * vehiculo.frenteX() + cruceZ * vehiculo.frenteZ();
+                float lateral = Math.abs(cruceX * vehiculo.frenteZ() - cruceZ * vehiculo.frenteX());
+                if (lateral > 4) {
+                    continue;
                 }
-                if (fase == ROJO && adelante > 8.2f && adelante < 13) { // Rojo antes de la línea de detención.
-                    return true; // Debe detenerse.
+                if (fase == ROJO && adelante > 8.2f && adelante < 13) {
+                    return true;
                 }
-                if (fase == AMARILLO && adelante > 11 && adelante < 13) { // Amarillo con distancia suficiente.
-                    return true; // Prefiere detenerse.
+                if (fase == AMARILLO && adelante > 11 && adelante < 13) {
+                    return true;
                 }
             }
         }
-        return false; // Ningún semáforo le obliga a frenar.
+        return false;
     }
 
 //===============AQUI SE REVISA SI CUALQUIER PEATON ESTA DELANTE DE UN AUTO==========
@@ -403,9 +428,12 @@ public class clase5 extends clase4 {
     }
 //======
 
-    /** Indica si un punto cae sobre algún auto (jugador o tráfico), con medio peatón de margen. */
+    /** Indica si un punto cae sobre algún auto o chata (jugador o tráfico), con medio peatón de margen. */
     protected boolean autoEn(float x, float z) {
         if (dentroDeAuto(autoX, autoZ, angulo, x, z)) { // Auto del jugador.
+            return true; // Ocupado.
+        }
+        if (chata.dentroDe(x, z)) { // Chata conectada del jugador.
             return true; // Ocupado.
         }
         for (VehiculoAutonomo vehiculo : trafico) { // Autos del tráfico.
@@ -418,30 +446,30 @@ public class clase5 extends clase4 {
 
     /** Comprueba un punto contra el rectángulo girado de un auto (1.65 x 2.6) más 0.35 de margen. */
     private static boolean dentroDeAuto(float autoX, float autoZ, float giro, float x, float z) {
-        float dx = x - autoX; // Vector desde el centro del auto en X.
-        float dz = z - autoZ; // Vector desde el centro del auto en Z.
-        float frenteX = -(float) Math.sin(giro); // Frente del auto en X.
-        float frenteZ = -(float) Math.cos(giro); // Frente del auto en Z.
-        float largo = Math.abs(dx * frenteX + dz * frenteZ); // Distancia a lo largo del auto.
-        float ancho = Math.abs(dx * frenteZ - dz * frenteX); // Distancia a lo ancho.
-        return largo < 1.3f + 0.35f && ancho < 0.83f + 0.35f; // Dentro de la carrocería ampliada.
+        float dx = x - autoX;
+        float dz = z - autoZ;
+        float frenteX = -(float) Math.sin(giro);
+        float frenteZ = -(float) Math.cos(giro);
+        float largo = Math.abs(dx * frenteX + dz * frenteZ);
+        float ancho = Math.abs(dx * frenteZ - dz * frenteX);
+        return largo < 1.3f + 0.35f && ancho < 0.83f + 0.35f;
     }
 
     /** El jugador tampoco puede atravesar los vehículos autónomos. */
-    @Override // Amplía las colisiones de clase2 con el tráfico.
+    @Override
     protected boolean puedeCircular(float x, float z) {
-        if (!super.puedeCircular(x, z)) { // Primero comprueba manzanas y bordes.
-            return false; // Rechaza la posición.
+        if (!super.puedeCircular(x, z)) {
+            return false;
         }
-        float[] auto = contornoAuto(x, z, angulo); // Rectángulo real del jugador en la posición propuesta.
-        for (VehiculoAutonomo vehiculo : trafico) { // Revisa cada vehículo autónomo.
-            if (!seTocan(auto, contornoAuto(vehiculo.x, vehiculo.z, vehiculo.angulo))) { // Las carrocerías no se tocan.
-                continue; // Este vehículo no estorba.
+        float[] auto = contornoAuto(x, z, angulo);
+        for (VehiculoAutonomo vehiculo : trafico) {
+            if (!seTocan(auto, contornoAuto(vehiculo.x, vehiculo.z, vehiculo.angulo))) {
+                continue;
             }
-            float nueva = (float) Math.hypot(x - vehiculo.x, z - vehiculo.z); // Distancia en la posición propuesta.
-            float actual = (float) Math.hypot(autoX - vehiculo.x, autoZ - vehiculo.z); // Distancia en la posición actual.
-            if (nueva < actual) { // Solo bloquea si el movimiento acerca ambos autos; separarse siempre se permite.
-                return false; // El choque detiene al jugador, como con las manzanas.
+            float nueva = (float) Math.hypot(x - vehiculo.x, z - vehiculo.z);
+            float actual = (float) Math.hypot(autoX - vehiculo.x, autoZ - vehiculo.z);
+            if (nueva < actual) {
+                return false;
             }
         }
 //===============AQUI SE VERIFICA LA COLISION DEL JUGADOR CON CUALQUIER PEATON==========
@@ -460,6 +488,37 @@ public class clase5 extends clase4 {
         return true; // No hay obstáculos.
     }
 
+    /** La chata tampoco puede atravesar vehículos autónomos ni peatones en la calzada. */
+    @Override
+    public boolean puedeCircularChata(float x, float z, float giro) {
+        if (!super.puedeCircularChata(x, z, giro)) { // Manzanas, bordes y el propio auto.
+            return false;
+        }
+        float[] contorno = contornoCaja(x, z, giro, Chata.MEDIO_ANCHO + HOLGURA, Chata.MEDIO_LARGO + HOLGURA);
+        for (VehiculoAutonomo vehiculo : trafico) { // Revisa cada vehículo autónomo del tráfico.
+            if (!seTocan(contorno, contornoAuto(vehiculo.x, vehiculo.z, vehiculo.angulo))) {
+                continue;
+            }
+            float nueva = (float) Math.hypot(x - vehiculo.x, z - vehiculo.z);
+            float actual = (float) Math.hypot(chataX - vehiculo.x, chataZ - vehiculo.z);
+            if (nueva < actual) { // Bloquea si la chata colisiona o se acerca al vehículo.
+                return false;
+            }
+        }
+        for (Peaton p : peatones) {
+            if (!p.sobreAcera()) {
+                float m = 0.35f;
+                float[] persona = {p.x - m, p.z - m, p.x + m, p.z - m, p.x + m, p.z + m, p.x - m, p.z + m};
+                float nueva = (float) Math.hypot(x - p.x, z - p.z);
+                float actual = (float) Math.hypot(chataX - p.x, chataZ - p.z);
+                if (seTocan(contorno, persona) && nueva < actual) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     // ==================== 4. CÁMARA EN PRIMERA PERSONA Y CABINA ====================
 
     /** Seguimiento y aérea vienen de clase2; la primera persona coloca el ojo en el asiento del conductor. */
@@ -472,15 +531,15 @@ public class clase5 extends clase4 {
         float seno = (float) Math.sin(angulo); // Orientación del auto.
         float coseno = (float) Math.cos(angulo); // Orientación del auto.
         float vaiven = (float) Math.sin(recorrido * 1.3f) * 0.03f * Math.min(1, Math.abs(velocidad) / 6); // Leve balanceo al avanzar.
-        float ojoX = autoX + seno * 0.2f; // Asiento: 0.2 detrás del centro del auto.
-        float ojoY = 1.4f + vaiven; // Altura de los ojos, por encima del capó.
-        float ojoZ = autoZ + coseno * 0.2f; // Asiento: 0.2 detrás del centro del auto.
-        float giro = angulo + mirarGiro; // Hacia dónde mira la cabeza.
-        float inclinacion = mirarInclinacion - 0.08f; // Ligeramente hacia abajo para ver el capó.
-        float horizontal = (float) Math.cos(inclinacion); // Parte horizontal de la mirada.
-        float frenteX = -(float) Math.sin(giro) * horizontal; // Dirección de la mirada en X.
-        float frenteY = (float) Math.sin(inclinacion); // Dirección de la mirada en Y.
-        float frenteZ = -(float) Math.cos(giro) * horizontal; // Dirección de la mirada en Z.
+        float ojoX = autoX + seno * 0.2f;
+        float ojoY = 1.4f + vaiven;
+        float ojoZ = autoZ + coseno * 0.2f;
+        float giro = angulo + mirarGiro;
+        float inclinacion = mirarInclinacion - 0.08f;
+        float horizontal = (float) Math.cos(inclinacion);
+        float frenteX = -(float) Math.sin(giro) * horizontal;
+        float frenteY = (float) Math.sin(inclinacion);
+        float frenteZ = -(float) Math.cos(giro) * horizontal;
         vector("uOjo", ojoX, ojoY, ojoZ); // Posición de la cámara.
         vector("uObjetivo", ojoX + frenteX, ojoY + frenteY, ojoZ + frenteZ); // Punto un paso delante de los ojos.
         decimal("uAspecto", (float) ancho / alto); // Proporción de la ventana.
@@ -545,20 +604,21 @@ public class clase5 extends clase4 {
         }
     }
 
+    // ==================== AQUI SE DIBUJA LETRERO DEL EDIFICIO / NEGOCIO ====================
     /** Coloca el letrero de un negocio entre la primera y la segunda fila de ventanas de la fachada sur o este. */
     private void dibujarNegocio(Negocio negocio) {
-        float cx = centro(negocio.columna()); // Centro X del edificio.
-        float cz = centro(negocio.fila()); // Centro Z del edificio.
-        float nx = negocio.caraEste() ? 1 : 0; // Normal de la fachada en X (hacia la calle).
-        float nz = negocio.caraEste() ? 0 : 1; // Normal de la fachada en Z.
-        float rx = nz; // Derecha de quien mira la fachada desde la calle, en X.
-        float rz = -nx; // Derecha de quien mira la fachada, en Z (en la fachada este apunta al norte).
-        String nombre = negocio.nombre(); // Texto del letrero.
-        float[] color = colorNegocio(nombre); // Color del panel.
-        float pixel = Math.min(0.11f, 6.4f / Fuente.ancho(nombre)); // Letras más pequeñas si el nombre es largo (fachada de 7).
-        float anchoTexto = Fuente.ancho(nombre) * pixel; // Ancho del texto en el mundo.
-        float anchoPanel = anchoTexto + 0.5f; // Ancho del panel con margen.
-        if (noche) { // De noche los letreros se ven encendidos.
+        float cx = centro(negocio.columna());
+        float cz = centro(negocio.fila());
+        float nx = negocio.caraEste() ? 1 : 0;
+        float nz = negocio.caraEste() ? 0 : 1;
+        float rx = nz;
+        float rz = -nx;
+        String nombre = negocio.nombre();
+        float[] color = colorNegocio(nombre);
+        float pixel = Math.min(0.11f, 6.4f / Fuente.ancho(nombre));
+        float anchoTexto = Fuente.ancho(nombre) * pixel;
+        float anchoPanel = anchoTexto + 0.5f;
+        if (noche) {
             entero("uEmision", 1); // Conservan su color.
         }
         float panelX = cx + nx * 3.57f; // Panel pegado a la fachada (el edificio mide 7 x 7).
@@ -618,6 +678,7 @@ public class clase5 extends clase4 {
     }
 //======
 
+    // ==================== AQUI SE DIBUJA EL AVION EN EL CIELO ====================
     /** Dibuja un avión blanco pequeño con la nariz hacia el oeste (-X). */
     private void dibujarAvion() {
         float x = avionX; // Posición X actual.
@@ -644,6 +705,7 @@ public class clase5 extends clase4 {
         }
     }
 
+    // ==================== AQUI SE DIBUJA VEHICULO DEL TRAFICO AUTONOMO ====================
     /** Dibuja un vehículo autónomo con las mismas proporciones que el auto del jugador. */
     private void dibujarVehiculo(VehiculoAutonomo v) {
         if (vistaMapa) { // En el minimapa basta una marca orientada.
@@ -667,16 +729,17 @@ public class clase5 extends clase4 {
         entero("uEmision", 0); // Restablece la iluminación normal.
     }
 
+    // ==================== AQUI SE DIBUJA LETRERO DE SECTOR (POSTES Y CARTEL) ====================
     /** Dibuja un letrero con el nombre del sector, legible desde ambos lados de la calle. */
     private void dibujarLetrero(String nombre, float x, float z, float[] color) {
-        float pixel = 0.13f; // Tamaño en el mundo de cada píxel de la fuente.
-        float anchoPanel = Fuente.ancho(nombre) * pixel + 0.8f; // Ancho del texto más un margen.
-        float altoPanel = Fuente.FILAS * pixel + 0.5f; // Alto del texto más un margen.
-        float yPanel = 3.2f; // Altura del centro del panel.
-        float postes = anchoPanel / 2 - 0.2f; // Distancia de cada poste al centro.
-        caja(x - postes, 1.6f, z, 0.12f, 2.6f, 0.12f, 0.25f, 0.27f, 0.30f); // Poste izquierdo sobre la acera.
-        caja(x + postes, 1.6f, z, 0.12f, 2.6f, 0.12f, 0.25f, 0.27f, 0.30f); // Poste derecho.
-        if (noche) { // De noche el letrero se ve iluminado.
+        float pixel = 0.13f;
+        float anchoPanel = Fuente.ancho(nombre) * pixel + 0.8f;
+        float altoPanel = Fuente.FILAS * pixel + 0.5f;
+        float yPanel = 3.2f;
+        float postes = anchoPanel / 2 - 0.2f;
+        caja(x - postes, 1.6f, z, 0.12f, 2.6f, 0.12f, 0.25f, 0.27f, 0.30f);
+        caja(x + postes, 1.6f, z, 0.12f, 2.6f, 0.12f, 0.25f, 0.27f, 0.30f);
+        if (noche) {
             entero("uEmision", 1); // El panel conserva su color.
         }
         caja(x, yPanel, z, anchoPanel, altoPanel, 0.1f, color[0], color[1], color[2]); // Panel de color del sector.
@@ -709,40 +772,42 @@ public class clase5 extends clase4 {
         vector("uPantalla", ancho, alto, 0); // Envía el tamaño actual de la ventana.
         try { // Restaura el estado aunque falle el dibujo.
             int escala = Math.max(2, Math.round(Math.min(ancho, alto) / 320f)); // Tamaño del texto según la ventana.
-            dibujarPanelEstado(escala); // Velocidad, luces, entregas y sector.
-            dibujarRotulosMapa(); // Nombres de sectores y norte sobre el minimapa.
-            if (mostrarAyuda) { // La ayuda se muestra solo si se pidió.
-                dibujarAyuda(escala); // Panel de controles.
+            dibujarPanelEstado(escala);
+            dibujarRotulosMapa();
+            if (mostrarAyuda) {
+                dibujarAyuda(escala);
             }
-            if (enMenu) { // El menú tiene prioridad.
-                dibujarMenu(escala); // Pantalla de inicio.
-            } else if (pausado) { // Después la pausa.
-                dibujarPausa(escala); // Aviso de pausa.
-            } else if (entregas == DESTINOS.length) { // Finalmente el recorrido completado.
-                dibujarVictoria(escala); // Mensaje de victoria.
+            if (enMenu) {
+                dibujarMenu(escala);
+            } else if (pausado) {
+                dibujarPausa(escala);
+            } else if (entregas == DESTINOS.length) {
+                dibujarVictoria(escala);
             }
-        } finally { // La próxima imagen debe empezar con el estado 3D normal.
-            entero("uMapa", 0); // Vuelve a la proyección en perspectiva.
-            glDisable(GL_BLEND); // Desactiva la mezcla.
-            glEnable(GL_DEPTH_TEST); // Reactiva la profundidad.
+        } finally {
+            entero("uMapa", 0);
+            glDisable(GL_BLEND);
+            glEnable(GL_DEPTH_TEST);
         }
-        if (glGetError() != GL_NO_ERROR) { // Comprueba errores de la interfaz.
-            throw new IllegalStateException("Error OpenGL en la interfaz"); // Los muestra en la consola.
+        if (glGetError() != GL_NO_ERROR) {
+            throw new IllegalStateException("Error OpenGL en la interfaz");
         }
     }
 
+    // ==================== AQUI SE CREA EL COSITO DE DATOS DE LA IMAGEN (PANEL DE ESTADO HUD) ====================
     /** Panel inferior izquierdo con la información de la partida. */
     private void dibujarPanelEstado(int e) {
         int kmh = Math.round(Math.abs(velocidad) * 3.6f); // Velocidad en km/h, como en el título.
         int indiceSector = sector(autoX, autoZ); // Sector donde está el auto.
         float[] colorSector = COLORES_SECTOR[indiceSector]; // Color de ese sector.
-        String[] etiquetas = {"VELOCIDAD: ", "AMBIENTE: ", "FAROS: ", "CAMARA: ", "ENTREGAS: ", "SECTOR: "}; // Primera parte de cada línea.
+        String[] etiquetas = {"VELOCIDAD: ", "AMBIENTE: ", "FAROS: ", "CAMARA: ", "ENTREGAS: ", "CHATA: ", "SECTOR: "}; // Primera parte de cada línea.
         String[] valores = { // Segunda parte de cada línea.
             kmh + " KM/H", // Velocidad.
             noche ? "NOCHE (N)" : "DIA (N)", // Ambiente.
             faros ? "ENCENDIDOS (F)" : "APAGADOS (F)", // Faros.
             NOMBRES_CAMARA[modoCamara] + " (C)", // Cámara.
             entregas + "/" + DESTINOS.length + "   " + (int) tiempo + " S", // Entregas y tiempo.
+            chata.chocando ? "COLISION (BLOQUEADA)" : "ACOPLADA", // Estado de la chata.
             SECTORES[indiceSector] // Sector actual.
         };
         float[][] colores = { // Color de cada valor.
@@ -751,6 +816,7 @@ public class clase5 extends clase4 {
             faros ? new float[] {1, 0.95f, 0.60f} : new float[] {0.6f, 0.6f, 0.6f}, // Claro si están encendidos.
             {0.75f, 0.90f, 1}, // Cámara.
             {1, 0.75f, 0.15f}, // Entregas en dorado, como la marca.
+            chata.chocando ? new float[] {1f, 0.30f, 0.30f} : new float[] {0.95f, 0.60f, 0.20f}, // Rojo en colisión, naranja en marcha.
             colorSector // Sector con su color propio.
         };
         int linea = 11 * e; // Separación vertical entre líneas.
@@ -812,6 +878,7 @@ public class clase5 extends clase4 {
         texto("N", norteX, norteY, e + 1, 1, 1, 1); // Indica que el norte está arriba.
     }
 
+    // ==================== AQUI SE CREA LA PANTALLA DE AYUDA (H) ====================
     /** Panel superior izquierdo con todos los controles. */
     private void dibujarAyuda(int e) {
         String[] lineas = { // Controles disponibles.
@@ -830,6 +897,7 @@ public class clase5 extends clase4 {
         panelLineas(lineas, 12, 12, e); // Lo coloca en la esquina superior izquierda.
     }
 
+    // ==================== AQUI SE CREA EL MENU DE INICIO ====================
     /** Pantalla de inicio. */
     private void dibujarMenu(int e) {
         rectangulo(0, 0, ancho, alto, 0, 0, 0, 0.55f); // Oscurece la ciudad detrás del menú.
@@ -850,6 +918,7 @@ public class clase5 extends clase4 {
         }
     }
 
+    // ==================== AQUI SE CREA LA PANTALLA DE PAUSA ====================
     /** Aviso de pausa. */
     private void dibujarPausa(int e) {
         rectangulo(0, 0, ancho, alto, 0, 0, 0, 0.45f); // Oscurece la escena detenida.

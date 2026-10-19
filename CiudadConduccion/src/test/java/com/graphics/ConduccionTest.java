@@ -332,4 +332,95 @@ public class ConduccionTest extends TestCase {
         assertFalse(juego.puedeCircular(v.x, v.z + 2)); // No puede acercarse a menos de 2.8 unidades.
         assertTrue(juego.puedeCircular(v.x, v.z + 5)); // Sí puede alejarse.
     }
+
+    /** Comprueba que la chata sigue al auto, gira con él y se detiene sin traspasarlo ni rebasarlo. */
+    public void testChataGiraYSeDetieneSinRebasar() {
+        clase2 juego = new clase2();
+        juego.reiniciar();
+        float distEsperada = clase2.DISTANCIA_ENGANCHE + clase2.DISTANCIA_CHATA;
+        assertEquals(juego.autoX, juego.chataX, 0.001f);
+        assertEquals(juego.autoZ + distEsperada, juego.chataZ, 0.001f);
+        assertEquals(0f, juego.anguloChata, 0.001f);
+
+        // 1. Avanzar en línea recta: la chata se mantiene alineada detrás
+        juego.velocidad = 8f;
+        for (int i = 0; i < 30; i++) {
+            juego.actualizarChata(1 / 60f, 0);
+        }
+        assertEquals(0f, juego.anguloChata, 0.01f);
+        assertTrue(juego.chataZ > juego.autoZ); // Sigue detrás del auto en Z
+
+        // 2. El auto dobla hacia la izquierda (angulo = 0.8) y avanza: la chata gira acompañando la trayectoria
+        juego.angulo = 0.8f; // El auto dobló
+        float frenteX = -(float) Math.sin(juego.angulo);
+        float frenteZ = -(float) Math.cos(juego.angulo);
+        for (int i = 0; i < 90; i++) {
+            juego.autoX += frenteX * juego.velocidad * (1 / 60f);
+            juego.autoZ += frenteZ * juego.velocidad * (1 / 60f);
+            juego.actualizarChata(1 / 60f, 1);
+        }
+        assertTrue("La chata debió girar en la dirección del auto", juego.anguloChata > 0.4f);
+
+        // 3. El auto se detiene (velocidad = 0): la chata también se detiene
+        juego.velocidad = 0f;
+        float chataXDetenida = juego.chataX;
+        float chataZDetenida = juego.chataZ;
+        float anguloDetenido = juego.anguloChata;
+        for (int i = 0; i < 60; i++) {
+            juego.actualizarChata(1 / 60f, 0);
+        }
+        assertEquals(chataXDetenida, juego.chataX, 0.0001f);
+        assertEquals(chataZDetenida, juego.chataZ, 0.0001f);
+        assertEquals(anguloDetenido, juego.anguloChata, 0.0001f);
+
+        // 4. Comprobar que nunca rebasa ni traspasa al auto (la distancia al centro del auto es siempre >= DISTANCIA_ENGANCHE)
+        float dx = juego.autoX - juego.chataX;
+        float dz = juego.autoZ - juego.chataZ;
+        float separacion = (float) Math.hypot(dx, dz);
+        assertTrue("La chata no traspasa al auto", separacion >= clase2.DISTANCIA_ENGANCHE);
+    }
+
+    /** Comprueba que si la chata colisiona con un obstáculo o pared, no avanza. */
+    public void testChataColisionBloqueaAvance() {
+        Chata chata = new Chata(0, 0);
+        float posInicialX = chata.x;
+        float posInicialZ = chata.z;
+
+        // Si el validador indica que la posición está bloqueada (choca con acera/edificio)
+        chata.actualizar(10, 10, 0, 5, 0, 1 / 60f, (x, z, giro) -> false);
+
+        assertTrue("La chata detecta el choque", chata.chocando);
+        assertEquals("La chata no avanza a la posición bloqueada en X", posInicialX, chata.x, 0.001f);
+        assertEquals("La chata no avanza a la posición bloqueada en Z", posInicialZ, chata.z, 0.001f);
+    }
+
+    /** Comprueba que al retroceder la chata no se desengancha y mantiene estabilidad anti-tijera. */
+    public void testChataReversaNoSeDesenganchaNiHaceTijera() {
+        clase2 juego = new clase2();
+        juego.reiniciar();
+        juego.velocidad = -4f; // En reversa
+        for (int i = 0; i < 60; i++) {
+            juego.actualizarChata(1 / 60f, 0); // Marcha atrás en línea recta
+        }
+        // Debe permanecer alineada con el auto (sin amplificación descontrolada de tijera)
+        assertTrue("La articulación en reversa recta es estable", Math.abs(juego.anguloChata - juego.angulo) < 0.15f);
+
+        // Comprueba la distancia fija a la bola de enganche
+        float frenteAutoX = -(float) Math.sin(juego.angulo);
+        float frenteAutoZ = -(float) Math.cos(juego.angulo);
+        float atrasAutoX = -frenteAutoX;
+        float atrasAutoZ = -frenteAutoZ;
+        float engancheX = juego.autoX + atrasAutoX * clase2.DISTANCIA_ENGANCHE;
+        float engancheZ = juego.autoZ + atrasAutoZ * clase2.DISTANCIA_ENGANCHE;
+        float distHitch = (float) Math.hypot(engancheX - juego.chataX, engancheZ - juego.chataZ);
+        assertEquals("La lanza permanece unida exactamente a la bola", clase2.DISTANCIA_CHATA, distHitch, 0.01f);
+    }
+
+    /** Comprueba que la chata reutiliza el sistema de colisiones para detectar edificios y aceras. */
+    public void testColisionChataReutilizaSistemaAuto() {
+        clase2 juego = new clase2();
+        assertFalse("Rechaza la chata en el centro de un edificio", juego.puedeCircularChata(-40, -40, 0));
+        assertFalse("Rechaza la chata fuera de los límites", juego.puedeCircularChata(0, 56, 0));
+        assertTrue("Acepta la chata en la calle libre", juego.puedeCircularChata(clase2.INICIO_X, clase2.INICIO_Z + 3.5f, 0));
+    }
 }
